@@ -26,8 +26,8 @@ double InputDouble(const string out_msg){
     cout << out_msg;
     while (!(cin >> res)||(cin.peek() != '\n')) {
         cin.clear();
-        while (cin.get()!='\n')
-            cout << "rIncorrect input.\n Repeat input: ";
+        while (cin.get()!='\n'){};
+        cout << "\nIncorrect input.\n Repeat input: ";
     }
     return res;
 }
@@ -37,8 +37,8 @@ int InputInt(const string out_msg){
     cout << out_msg;
     while (!(cin >> res)||(cin.peek() != '\n')) {
         cin.clear();
-        while (cin.get()!='\n')
-            cout << "Incorrect input.\n Repeat input: ";
+        while (cin.get()!='\n'){};
+        cout << "\nIncorrect input.\n Repeat input: ";
     }
     return res;
 }
@@ -66,9 +66,8 @@ struct HermitData
 {
     double x; int n;
 };
-
+//0- чтение , 1- запись
 int pipe_in[2];int pipe_out[2];
-pid_t pid;
 
 void server(const char arg){
     HermitData data;
@@ -116,7 +115,7 @@ char doArg(){
         }
     }
 
-    return 'r';
+    return 'i';
 }
 int main(){
     char arg = doArg();
@@ -125,7 +124,7 @@ int main(){
         cerr << "Pipe error\n";
         return 1;
     }
-    
+    pid_t pid;
     pid = fork();
     if (pid < 0){
         cerr << "Fork error\n";
