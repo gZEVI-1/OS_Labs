@@ -132,14 +132,13 @@ int main(){
     }
     
     if (pid == 0){
-        close(pipe_in[1]);
-        close(pipe_out[0]);
         server(arg);
     } else {
-        close(pipe_in[0]);
-        close(pipe_out[1]);
         client();
     }
+    
+    close(pipe_in[0]);close(pipe_in[1]);
+    close(pipe_out[0]);close(pipe_out[1]);
 
     return 0;
 }
