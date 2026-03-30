@@ -130,7 +130,6 @@ int main(){
         cerr << "Fork error\n";
         return 1;
     }
-
     
     if (pid == 0){
         close(pipe_in[1]);
