@@ -101,19 +101,21 @@ char doArg(){
     while (getline(cmdline, arg, '\0')) {
         args.push_back(arg);
     }
-   
-    for (const auto& arg : args) {
-        if (arg == "--help" || arg == "-h") {
-            help();
-            exit(0);
+
+    if (args.size()>=1){
+        for (const auto& arg : args) {
+            if (arg == "--help" || arg == "-h") {
+                help();
+                exit(0);
+            }
+            else if (arg == "--iter"|| arg == "-i") {
+                return 'i';
+            }
+            else if (arg == "--rec"|| arg == "-r") {
+                return 'r';
+            }
         }
-        if (arg == "--iter"|| arg == "-i") {
-            return 'i';
-        }
-        if (arg == "--rec"|| arg == "-r") {
-            return 'r';
-        }
-    }
+    } 
 
     return 'i';
 }
