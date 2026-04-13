@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{82A3B9E6-7D43-4E45-B540-AB5602F8E5B5}|Lab4_server\\Lab4_server.vcxproj|E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\Lab4_server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{82A3B9E6-7D43-4E45-B540-AB5602F8E5B5}|Lab4_server\\Lab4_server.vcxproj|solutionrelative:Lab4_server\\Lab4_server.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{82A3B9E6-7D43-4E45-B540-AB5602F8E5B5}|Lab4_server\\Lab4_server.vcxproj|E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\adc.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{82A3B9E6-7D43-4E45-B540-AB5602F8E5B5}|Lab4_server\\Lab4_server.vcxproj|solutionrelative:Lab4_server\\adc.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{16B2DDE1-6610-4DB5-973B-AD8DB2D50DED}|client\\client.vcxproj|E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{16B2DDE1-6610-4DB5-973B-AD8DB2D50DED}|client\\client.vcxproj|solutionrelative:Lab4_server\\client.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{82A3B9E6-7D43-4E45-B540-AB5602F8E5B5}|Lab4_server\\Lab4_server.vcxproj|E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\FILE.txt||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{82A3B9E6-7D43-4E45-B540-AB5602F8E5B5}|Lab4_server\\Lab4_server.vcxproj|solutionrelative:Lab4_server\\FILE.txt||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "adc.txt",
+              "DocumentMoniker": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\adc.txt",
+              "RelativeDocumentMoniker": "Lab4_server\\adc.txt",
+              "ToolTip": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\adc.txt",
+              "RelativeToolTip": "Lab4_server\\adc.txt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2026-04-13T20:47:22.841Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "client.cpp",
+              "DocumentMoniker": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\client.cpp",
+              "RelativeDocumentMoniker": "Lab4_server\\client.cpp",
+              "ToolTip": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\client.cpp",
+              "RelativeToolTip": "Lab4_server\\client.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-04-13T20:25:10.988Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "FILE.txt",
+              "DocumentMoniker": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\FILE.txt",
+              "RelativeDocumentMoniker": "Lab4_server\\FILE.txt",
+              "ToolTip": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\FILE.txt",
+              "RelativeToolTip": "Lab4_server\\FILE.txt",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003109|",
+              "WhenOpened": "2026-04-13T20:16:53.975Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Lab4_server.cpp",
+              "DocumentMoniker": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\Lab4_server.cpp",
+              "RelativeDocumentMoniker": "Lab4_server\\Lab4_server.cpp",
+              "ToolTip": "E:\\FOLDER\\Study\\4tm\\OS_Labs\\Lab4_server\\Lab4_server\\Lab4_server.cpp",
+              "RelativeToolTip": "Lab4_server\\Lab4_server.cpp",
+              "ViewState": "AgIAAPAAAAAAAAAAAAAAAAgAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2026-04-13T19:52:49.429Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
