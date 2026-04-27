@@ -183,7 +183,7 @@ int main() {
     cin >> numClients;
     if (numClients < 3) {
         cout << "Minimum 3 clients required. Setting to 3." << endl;
-        numClients = 3;
+        //numClients = 3;
     }
 
     // Создаем сокет для прослушивания
