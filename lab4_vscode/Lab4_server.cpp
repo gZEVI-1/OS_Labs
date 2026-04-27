@@ -23,7 +23,6 @@ vector<ClientInfo> clients;
 vector<string> words;
 int currentWordIndex = 0;
 
-// Функция для разбиения строки на слова
 vector<string> splitIntoWords(const string& text) {
     vector<string> result;
     stringstream ss(text);
@@ -34,7 +33,6 @@ vector<string> splitIntoWords(const string& text) {
     return result;
 }
 
-// Функция для чтения файла
 bool readFile(const string& filename) {
     ifstream file(filename);
     if (!file.is_open()) {
@@ -54,7 +52,7 @@ bool readFile(const string& filename) {
     return true;
 }
 
-// Функция для запуска клиентского процесса
+
 bool startClientProcess(int clientId) {
     STARTUPINFOA si;
     PROCESS_INFORMATION pi;
@@ -83,7 +81,6 @@ bool startClientProcess(int clientId) {
         return false;
     }
 
-    // Закрываем дескрипторы (процесс продолжает работать)
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 
@@ -91,21 +88,20 @@ bool startClientProcess(int clientId) {
     return true;
 }
 
-// Функция для отправки слова клиенту
 bool sendWordToClient(int clientIndex, const string& word) {
     if (clientIndex >= clients.size() || !clients[clientIndex].connected) {
         return false;
     }
 
     int wordLen = word.length();
-    // Сначала отправляем длину слова
+
     int sendResult = send(clients[clientIndex].socket, (char*)&wordLen, sizeof(int), 0);
     if (sendResult == SOCKET_ERROR) {
         clients[clientIndex].connected = false;
         return false;
     }
 
-    // Затем отправляем само слово
+
     sendResult = send(clients[clientIndex].socket, word.c_str(), wordLen, 0);
     if (sendResult == SOCKET_ERROR) {
         clients[clientIndex].connected = false;
@@ -116,7 +112,6 @@ bool sendWordToClient(int clientIndex, const string& word) {
     return true;
 }
 
-// Функция для распределения слов по клиентам
 void distributeWords() {
     int numClients = clients.size();
     int activeClients = 0;
