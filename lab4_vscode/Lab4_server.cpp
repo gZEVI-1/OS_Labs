@@ -60,7 +60,6 @@ bool startClientProcess(int clientId) {
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
-    // Формируем командную строку для клиента
     string cmdLine = "Client.exe " + to_string(clientId);
 
     BOOL result = CreateProcessA(
@@ -125,7 +124,6 @@ void distributeWords() {
         return;
     }
 
-    // Распределяем слова по круговому принципу
     while (currentWordIndex < words.size()) {
         int clientIndex = currentWordIndex % numClients;
 
@@ -136,10 +134,9 @@ void distributeWords() {
         }
 
         currentWordIndex++;
-        Sleep(100); // Небольшая задержка для стабильности
+        Sleep(100); 
     }
 
-    // Отправляем сигнал завершения всем клиентам (длина -1)
     int endSignal = -1;
     for (int i = 0; i < numClients; i++) {
         if (clients[i].connected) {
@@ -153,7 +150,7 @@ void distributeWords() {
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
-    // Инициализация Winsock
+
     WSAData wsaData;
     WORD DLLVersion = MAKEWORD(2, 2);
     if (WSAStartup(DLLVersion, &wsaData) != 0) {
@@ -161,18 +158,18 @@ int main() {
         return 1;
     }
 
-    // Ввод имени файла
+
     string filename;
     cout << "Enter filename: ";
     getline(cin, filename);
 
-    // Читаем файл
+
     if (!readFile(filename)) {
         WSACleanup();
         return 1;
     }
 
-    // Ввод количества клиентов
+
     int numClients;
     cout << "Enter number of clients (minimum 3): ";
     cin >> numClients;
@@ -181,7 +178,6 @@ int main() {
         //numClients = 3;
     }
 
-    // Создаем сокет для прослушивания
     SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (listenSocket == INVALID_SOCKET) {
         cerr << "Socket creation failed!" << endl;
@@ -189,13 +185,12 @@ int main() {
         return 1;
     }
 
-    // Настройка адреса
     SOCKADDR_IN addr;
     addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    addr.sin_port = htons(PORT);
+    addr.sin_port = htons(1111);
     addr.sin_family = AF_INET;
 
-    // Привязка сокета
+
     if (bind(listenSocket, (SOCKADDR*)&addr, sizeof(addr)) == SOCKET_ERROR) {
         cerr << "Bind failed! Error: " << WSAGetLastError() << endl;
         closesocket(listenSocket);
@@ -203,7 +198,7 @@ int main() {
         return 1;
     }
 
-    // Начинаем прослушивание
+
     if (listen(listenSocket, numClients) == SOCKET_ERROR) {
         cerr << "Listen failed! Error: " << WSAGetLastError() << endl;
         closesocket(listenSocket);
@@ -213,15 +208,13 @@ int main() {
 
     cout << "Server started. Waiting for " << numClients << " clients..." << endl;
 
-    // Запускаем клиентские процессы
     for (int i = 1; i <= numClients; i++) {
         if (!startClientProcess(i)) {
             cerr << "Failed to start client " << i << endl;
         }
-        Sleep(500); // Даем время на запуск
+        Sleep(500); 
     }
 
-    // Принимаем подключения от клиентов
     clients.resize(numClients);
     int connectedClients = 0;
 
@@ -232,7 +225,6 @@ int main() {
             continue;
         }
 
-        // Получаем ID клиента
         int clientId;
         int recvResult = recv(clientSocket, (char*)&clientId, sizeof(int), 0);
         if (recvResult <= 0) {
@@ -240,7 +232,6 @@ int main() {
             continue;
         }
 
-        // Сохраняем информацию о клиенте
         if (clientId >= 1 && clientId <= numClients) {
             clients[clientId - 1].socket = clientSocket;
             clients[clientId - 1].id = clientId;
@@ -256,10 +247,8 @@ int main() {
 
     cout << "All clients connected. Starting distribution..." << endl;
 
-    // Распределяем слова
     distributeWords();
 
-    // Закрываем соединения
     for (int i = 0; i < numClients; i++) {
         if (clients[i].connected) {
             closesocket(clients[i].socket);
