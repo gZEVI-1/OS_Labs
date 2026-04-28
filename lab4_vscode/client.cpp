@@ -20,8 +20,7 @@ int main(int argc, char* argv[]) {
 
 
     WSAData wsaData;
-    WORD DLLVersion = MAKEWORD(2, 2);
-    if (WSAStartup(DLLVersion, &wsaData) != 0) {
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
         cerr << "WSAStartup failed!" << endl;
         return 1;
     }

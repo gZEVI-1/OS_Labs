@@ -63,14 +63,14 @@ bool startClientProcess(int clientId) {
     string cmdLine = "Client.exe " + to_string(clientId);
 
     BOOL result = CreateProcessA(
-        NULL,                           // Имя приложения
-        (LPSTR)cmdLine.c_str(),         // Командная строка
-        NULL,                           // Атрибуты процесса
-        NULL,                           // Атрибуты потока
-        FALSE,                          // Наследование дескрипторов
-        CREATE_NEW_CONSOLE,             // Флаги создания (новая консоль)
-        NULL,                           // Окружение
-        NULL,                           // Текущий каталог
+        NULL,                           // имя приложения
+        (LPSTR)cmdLine.c_str(), 
+        NULL,                           // атрибуты процесса
+        NULL,                           // атрибуты потока
+        FALSE,                          // наследование дескрипторов
+        CREATE_NEW_CONSOLE,
+        NULL,                           // окружение
+        NULL,                           // каталог
         &si,                            // STARTUPINFO
         &pi                             // PROCESS_INFORMATION
     );
