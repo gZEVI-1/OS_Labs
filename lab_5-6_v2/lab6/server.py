@@ -4,6 +4,7 @@ import threading
 import datetime
 from pathlib import Path
 
+# Импорт компонентов PySide6 для построения графического интерфейса сервера
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QTextEdit, QMessageBox, QFileDialog,
@@ -12,33 +13,48 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal, QObject
 
 
+# -----------------------------------------------------------------------------
+# Класс сигналов для безопасной передачи событий из рабочих потоков
+# (обработчиков клиентов) в главный поток GUI.
+# -----------------------------------------------------------------------------
 class ServerSignals(QObject):
-    new_log = Signal(str)
-    client_connected = Signal(str)
-    client_disconnected = Signal(str)
-    session_started = Signal(str)
-    session_ended = Signal(str)
+    new_log = Signal(str)              # Новая строка в журнал событий
+    client_connected = Signal(str)     # Клиент подключился (addr)
+    client_disconnected = Signal(str)  # Клиент отключился (addr)
+    session_started = Signal(str)      # Сеанс начат (addr владельца семафора)
+    session_ended = Signal(str)        # Сеанс завершён (addr)
 
 
+# -----------------------------------------------------------------------------
+# Главное окно сервера. Управляет GUI, прослушиванием порта, семафором
+# и обработкой клиентских подключений.
+# -----------------------------------------------------------------------------
 class NumberConverterServer(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("ЛР №6")
         self.setGeometry(100, 100, 750, 650)
 
-        self.server_socket = None
-        self.running = False
+        # Сетевые атрибуты
+        self.server_socket = None  # Основной слушающий сокет
+        self.running = False       # Флаг работы сервера (управляет циклами)
+
+        # Семафор с ограничением 1: гарантирует, что только один клиент
+        # одновременно может владеть активным сеансом (конвертировать числа).
         self.semaphore = threading.Semaphore(1)
-        self.active_session_addr = None
-        self.clients = {}      # addr -> thread
+        self.active_session_addr = None  # Адрес клиента, захватившего семафор
+
+        # Словари для учёта клиентов: потоки обработки и сокеты
+        self.clients = {}      # addr -> Thread
         self.client_socks = {} # addr -> socket
 
-  
+        # Настройка логирования с архивацией предыдущей сессии
         self.log_file = Path("server_log.txt")
         self.archive_dir = Path("prev_session")
         self.archive_dir.mkdir(exist_ok=True)
         self._archive_old_log()
 
+        # Инициализация сигналов и привязка слотов
         self.signals = ServerSignals()
         self.signals.new_log.connect(self.append_log)
         self.signals.client_connected.connect(self.on_client_connected)
@@ -49,17 +65,23 @@ class NumberConverterServer(QMainWindow):
         self.init_ui()
         self.log_event("Сервер инициализирован. Готов к запуску.")
 
+    # -------------------------------------------------------------------------
+    # Перемещение старого файла лога в архив с меткой времени.
+    # -------------------------------------------------------------------------
     def _archive_old_log(self):
         if self.log_file.exists():
             ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             self.log_file.rename(self.archive_dir / f"server_log_{ts}.txt")
 
+    # -------------------------------------------------------------------------
+    # Создание и компоновка виджетов интерфейса сервера.
+    # -------------------------------------------------------------------------
     def init_ui(self):
         central = QWidget()
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
 
-
+        # --- Группа управления сервером ---
         ctrl = QGroupBox("Управление сервером")
         h = QHBoxLayout()
         self.btn_start = QPushButton("Запустить сервер")
@@ -69,7 +91,7 @@ class NumberConverterServer(QMainWindow):
         self.btn_stop = QPushButton("Остановить сервер")
         self.btn_stop.setStyleSheet("background-color: #f44336; color: white; font-weight: bold;")
         self.btn_stop.clicked.connect(self.stop_server)
-        self.btn_stop.setEnabled(False)
+        self.btn_stop.setEnabled(False)  # Недоступен до запуска
 
         self.btn_prev = QPushButton("Лог предыдущей сессии")
         self.btn_prev.clicked.connect(self.view_previous_log)
@@ -81,17 +103,19 @@ class NumberConverterServer(QMainWindow):
         ctrl.setLayout(h)
         layout.addWidget(ctrl)
 
+        # --- Группа настроек ---
         sett = QGroupBox("Настройки")
         sh = QHBoxLayout()
         sh.addWidget(QLabel("Порт:"))
         self.spin_port = QSpinBox()
-        self.spin_port.setRange(1024, 65535)
+        self.spin_port.setRange(1024, 65535)  # Диапазон динамических портов
         self.spin_port.setValue(1111)
         sh.addWidget(self.spin_port)
         sh.addStretch()
         sett.setLayout(sh)
         layout.addWidget(sett)
 
+        # --- Группа текущего статуса ---
         stat = QGroupBox("Текущий статус")
         sv = QVBoxLayout()
         self.lbl_status = QLabel("Сервер остановлен")
@@ -103,12 +127,14 @@ class NumberConverterServer(QMainWindow):
         stat.setLayout(sv)
         layout.addWidget(stat)
 
+        # --- Группа подключённых клиентов ---
         cl = QGroupBox("Подключённые клиенты (ожидают или работают)")
         cv = QVBoxLayout()
-        self.lst_clients = QListWidget()
+        self.lst_clients = QListWidget()  # Визуальный список адресов клиентов
         cv.addWidget(self.lst_clients)
         cl.setLayout(cv)
 
+        # --- Группа журнала событий ---
         log_box = QGroupBox("Журнал событий (текущая сессия)")
         lv = QVBoxLayout()
         self.txt_log = QTextEdit()
@@ -125,6 +151,7 @@ class NumberConverterServer(QMainWindow):
         log_box.setLayout(lv)
         layout.addWidget(log_box, stretch=1)
 
+        # --- Нижняя панель ---
         lh = QHBoxLayout()
         self.btn_clear = QPushButton("Очистить отображение")
         self.btn_clear.clicked.connect(self.txt_log.clear)
@@ -134,6 +161,9 @@ class NumberConverterServer(QMainWindow):
         lh.addWidget(self.btn_save)
         layout.addLayout(lh)
 
+    # -------------------------------------------------------------------------
+    # Запись события в журнал с меткой времени. Дублирует в файл и GUI.
+    # -------------------------------------------------------------------------
     def log_event(self, msg: str):
         ts = datetime.datetime.now().strftime("%H:%M:%S")
         line = f"[{ts}] {msg}"
@@ -141,32 +171,51 @@ class NumberConverterServer(QMainWindow):
         with open(self.log_file, "a", encoding="utf-8") as f:
             f.write(line + "\n")
 
+    # -------------------------------------------------------------------------
+    # Слот для добавления строки в QTextEdit с автопрокруткой вниз.
+    # -------------------------------------------------------------------------
     def append_log(self, line: str):
         self.txt_log.append(line)
         self.txt_log.verticalScrollBar().setValue(self.txt_log.verticalScrollBar().maximum())
 
+    # -------------------------------------------------------------------------
+    # Слот: добавление адреса клиента в список подключённых.
+    # -------------------------------------------------------------------------
     def on_client_connected(self, addr: str):
         self.lst_clients.addItem(addr)
 
+    # -------------------------------------------------------------------------
+    # Слот: удаление адреса клиента из списка при отключении.
+    # -------------------------------------------------------------------------
     def on_client_disconnected(self, addr: str):
         for item in self.lst_clients.findItems(addr, Qt.MatchExactly):
             self.lst_clients.takeItem(self.lst_clients.row(item))
 
+    # -------------------------------------------------------------------------
+    # Слот: отображение адреса клиента, захватившего активный сеанс.
+    # -------------------------------------------------------------------------
     def on_session_started(self, addr: str):
         self.lbl_active.setText(f"Активный сеанс: {addr}")
         self.lbl_active.setStyleSheet("color: #4CAF50; font-weight: bold;")
 
+    # -------------------------------------------------------------------------
+    # Слот: сброс информации об активном сеансе.
+    # -------------------------------------------------------------------------
     def on_session_ended(self, addr: str):
         self.lbl_active.setText("Активный сеанс: нет")
         self.lbl_active.setStyleSheet("color: #666;")
 
+    # -------------------------------------------------------------------------
+    # Запуск сервера: создание слушающего сокета, привязка к 0.0.0.0:порт,
+    # установка опции SO_REUSEADDR и запуск фонового потока accept_loop.
+    # -------------------------------------------------------------------------
     def start_server(self):
         port = self.spin_port.value()
         self.running = True
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind(("0.0.0.0", port))
-        self.server_socket.listen(10)
+        self.server_socket.listen(10)  # Длина очереди ожидающих подключений
 
         self.btn_start.setEnabled(False)
         self.btn_stop.setEnabled(True)
@@ -176,9 +225,14 @@ class NumberConverterServer(QMainWindow):
 
         threading.Thread(target=self.accept_loop, daemon=True).start()
 
+    # -------------------------------------------------------------------------
+    # Фоновый цикл приёма входящих TCP-подключений. Работает в отдельном
+    # потоке. Для каждого клиента создаётся свой поток handle_client.
+    # -------------------------------------------------------------------------
     def accept_loop(self):
         while self.running:
             try:
+                # Таймаут 1 секунда позволяет периодически проверять флаг running
                 self.server_socket.settimeout(1.0)
                 sock, addr = self.server_socket.accept()
                 addr_str = f"{addr[0]}:{addr[1]}"
@@ -186,6 +240,7 @@ class NumberConverterServer(QMainWindow):
                     sock.close()
                     break
 
+                # Регистрация клиента и запуск обработчика
                 self.client_socks[addr_str] = sock
                 self.signals.client_connected.emit(addr_str)
                 self.log_event(f"Принято подключение от {addr_str}")
@@ -195,36 +250,45 @@ class NumberConverterServer(QMainWindow):
                 t.start()
 
             except socket.timeout:
-                continue
+                continue  # Нормальное поведение: проверить флаг running и ждать дальше
             except Exception as e:
                 if self.running:
                     self.log_event(f"Ошибка accept: {e}")
 
+    # -------------------------------------------------------------------------
+    # Обработчик клиента: работает в отдельном потоке для каждого подключения.
+    # Разбирает команды START, END, EXIT и данные для конвертации.
+    # Управляет семафором, ограничивающим число активных сеансов до одного.
+    # -------------------------------------------------------------------------
     def handle_client(self, sock: socket.socket, addr: str):
-        has_session = False
+        has_session = False  # Локальный флаг: захвачен ли семафор этим клиентом
         try:
             while self.running:
                 data = sock.recv(1024).decode("utf-8").strip()
                 if not data:
-                    break
+                    break  # Клиент закрыл соединение
 
                 self.log_event(f"От {addr}: '{data}'")
 
+                # --- Команда START: захват семафора ---
                 if data == "START":
                     if has_session:
                         sock.sendall(b"ERROR: Session already active.")
                         continue
 
-                    
+                    # Попытка неблокирующего захвата семафора.
+                    # Если семафор занят, отправляем WAIT и блокируем поток
+                    # до освобождения ресурса.
                     if not self.semaphore.acquire(blocking=False):
                         sock.sendall(b"WAIT: Server busy. Waiting for free slot...")
-                        self.semaphore.acquire() 
+                        self.semaphore.acquire()  # Блокирующее ожидание
                     has_session = True
                     self.active_session_addr = addr
                     self.log_event(f"СЕАНС НАЧАТ: {addr} (семафор захвачен)")
                     sock.sendall(b"OK: Session started. Send <number> <bin|hex>")
                     self.signals.session_started.emit(addr)
 
+                # --- Команда END: освобождение семафора ---
                 elif data == "END":
                     if not has_session:
                         sock.sendall(b"ERROR: No active session.")
@@ -236,12 +300,14 @@ class NumberConverterServer(QMainWindow):
                         sock.sendall(b"OK: Session ended. Connection remains active.")
                         self.signals.session_ended.emit(addr)
 
+                # --- Команда EXIT: полное отключение клиента ---
                 elif data == "EXIT":
                     self.log_event(f"Клиент {addr} запросил полное отключение (EXIT)")
                     break
 
+                # --- Данные для конвертации ---
                 else:
-                    
+                    # Без активного сеанса конвертация запрещена
                     if not has_session:
                         sock.sendall(b"ERROR: No active session. Send START first.")
                     else:
@@ -253,10 +319,12 @@ class NumberConverterServer(QMainWindow):
             if self.running:
                 self.log_event(f"Клиент {addr} ошибка/отключение: {e}")
         finally:
+            # Гарантированное освобождение семафора при аварийном отключении
             if has_session:
                 self.semaphore.release()
                 self.active_session_addr = None
                 self.signals.session_ended.emit(addr)
+            # Удаление клиента из учётных структур и закрытие сокета
             self.clients.pop(addr, None)
             self.client_socks.pop(addr, None)
             try:
@@ -266,6 +334,10 @@ class NumberConverterServer(QMainWindow):
             self.signals.client_disconnected.emit(addr)
             self.log_event(f"Клиент {addr} отключён.")
 
+    # -------------------------------------------------------------------------
+    # Логика конвертации числа в указанную систему счисления.
+    # Поддерживаются режимы "bin" (двоичная) и "hex" (шестнадцатеричная).
+    # -------------------------------------------------------------------------
     def convert_number(self, data: str) -> str:
         parts = data.split()
         if len(parts) != 2:
@@ -279,15 +351,23 @@ class NumberConverterServer(QMainWindow):
         if mode.lower() == "bin":
             if num < 0:
                 return "ERROR: Negative numbers not supported for bin"
+            # Убираем префикс '0b' у результата bin(); для 0 возвращаем "0"
             return bin(num)[2:] if num != 0 else "0"
         elif mode.lower() == "hex":
+            # Сохраняем знак минуса отдельно, затем переводим модуль в hex
             prefix = "-" if num < 0 else ""
             return prefix + hex(abs(num))[2:].upper()
         return "ERROR: Mode must be 'bin' or 'hex'"
 
+    # -------------------------------------------------------------------------
+    # Остановка сервера: сброс флага running, закрытие всех клиентских
+    # сокетов и основного слушающего сокета. Обновление интерфейса.
+    # -------------------------------------------------------------------------
     def stop_server(self):
         self.running = False
         self.log_event("Остановка сервера...")
+        # Принудительное закрытие всех активных соединений для прерывания
+        # блокирующих операций recv в потоках handle_client.
         for addr, sock in list(self.client_socks.items()):
             try:
                 sock.close()
@@ -307,6 +387,9 @@ class NumberConverterServer(QMainWindow):
         self.lst_clients.clear()
         self.log_event("Сервер остановлен.")
 
+    # -------------------------------------------------------------------------
+    # Просмотр архивного файла лога через диалог выбора файла.
+    # -------------------------------------------------------------------------
     def view_previous_log(self):
         fp, _ = QFileDialog.getOpenFileName(
             self, "Лог предыдущей сессии", str(self.archive_dir), "Text files (*.txt)"
@@ -327,6 +410,9 @@ class NumberConverterServer(QMainWindow):
             except Exception as e:
                 QMessageBox.critical(self, "Ошибка", str(e))
 
+    # -------------------------------------------------------------------------
+    # Сохранение текущего журнала в выбранный пользователем файл.
+    # -------------------------------------------------------------------------
     def save_log(self):
         fp, _ = QFileDialog.getSaveFileName(self, "Сохранить лог", "server_log.txt", "Text files (*.txt)")
         if fp:
@@ -338,6 +424,10 @@ class NumberConverterServer(QMainWindow):
                 QMessageBox.critical(self, "Ошибка", str(e))
 
 
+# -----------------------------------------------------------------------------
+# Точка входа: создание приложения Qt, применение тёмной темы и запуск
+# главного цикла обработки событий.
+# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
